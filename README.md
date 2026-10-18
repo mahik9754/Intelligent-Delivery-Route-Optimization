@@ -28,7 +28,7 @@ The aim of this project is to develop an intelligent route optimization system t
 
 - **Python** — implementation of the optimization algorithms.
 - **NumPy** — numerical calculations, matrices, and random data generation.
-- **Matplotlib** — planned for visualizing routes and optimization results.
+- **Matplotlib** — for visualizing routes and optimization results.
 
 ## Methodology
 
@@ -89,6 +89,15 @@ It works by reversing sections of a route to explore alternative customer visiti
 
 This allows the system to refine an existing route without changing the set of customers being visited.
 
+### 6. Dynamic Traffic Simulation and Reoptimization
+
+The traffic simulation module introduces disruptions on selected road edges by increasing their travel times and congestion levels. The modified network is created as a copy of the original network, allowing both scenarios to be evaluated independently.
+
+The system evaluates the original optimized route under disrupted traffic conditions and then runs ACO followed by 2-opt on the modified network to find an alternative route.
+
+The results are compared to examine how traffic disruptions affect travel time, congestion exposure, delivery lateness, and the overall objective value.
+
+
 ## Objective Function
 
 The system uses a weighted objective function:
@@ -136,9 +145,37 @@ The following results were obtained from the current implementation using the sa
 
 These results are from one synthetic test network. Further testing across multiple random seeds and network configurations is needed before drawing broader conclusions.
 
+
+## Dynamic Traffic Experiment
+
+A traffic disruption scenario was evaluated using the optimized ACO + 2-opt route. In the current run, all 13 edges of the original route were selected for disruption.
+
+| Metric | Original Route Under Traffic | Reoptimized Under Traffic |
+|---|---:|---:|
+| Distance | 41.097 | 51.025 |
+| Travel time | 250.580 | 126.016 |
+| Congestion exposure | 207.754 | 44.486 |
+| Waiting time | 0.000 | 27.858 |
+| Lateness | 1163.154 | 358.004 |
+| On-time deliveries | 2 | 5 |
+| Objective value | 4.971 | 1.749 |
+
+### Traffic Experiment Observations
+
+- The objective value increased from 1.246 under normal conditions to 4.971 when the original route was evaluated under disrupted traffic.
+- Reoptimization reduced the objective value from 4.971 to 1.749, an improvement of approximately 64.83% relative to continuing with the original route.
+- Travel time decreased from 250.580 to 126.016 after reoptimization.
+- Congestion exposure decreased from 207.754 to 44.486.
+- On-time deliveries increased from 2 to 5.
+- The reoptimized route had a greater total distance, illustrating the trade-off between distance and other delivery performance measures.
+
+These results demonstrate the potential benefit of reoptimizing delivery routes when traffic conditions change. The findings are specific to the tested synthetic network and disruption scenario.
+
+
 ## Project Structure
 
 ```text
+
 Intelligent-Delivery-Route-Optimization/
 │
 ├── network.py
@@ -149,49 +186,52 @@ Intelligent-Delivery-Route-Optimization/
 ├── traffic.py
 ├── plots.py
 ├── main.py
+├── plots/
+│   ├── route_comparison.png
+│   ├── aco_convergence.png
+│   ├── metric_comparison.png
+│   └── traffic_comparison.png
 └── README.md
+
 ```
+
 
 ## How to Run
 
-### 1. Install the dependency
+### 1. Install dependencies
 
 ```bash
-python -m pip install numpy
+python -m pip install numpy matplotlib
 ```
 
-### 2. Run the nearest-neighbour baseline
+### 2. Run the complete experiment
 
 ```bash
-python baseline.py
+python main.py
 ```
 
-### 3. Run Ant Colony Optimization
+The program generates the synthetic delivery network, evaluates the Nearest Neighbour baseline, runs ACO and 2-opt, simulates traffic disruptions, and reoptimizes the route under the modified conditions.
 
-```bash
-python aco.py
-```
+It prints a metric comparison and percentage improvements in the terminal. The generated visualizations are saved in the `plots/` directory.
 
-### 4. Run ACO followed by 2-opt local search
 
-```bash
-python local_search.py
-```
-
-Run these commands from the project directory. The required Python files should be in the same directory.
 
 ## Current Progress
 
-The following components have been implemented and tested individually:
+The following components have been implemented and integrated:
 
 - Synthetic delivery network generation.
-- Route evaluation and objective calculation.
-- Nearest-neighbour baseline.
+- Route evaluation and weighted objective calculation.
+- Nearest Neighbour baseline.
 - Ant Colony Optimization.
 - 2-opt local search.
-- Initial performance comparison using the same test network.
+- Dynamic traffic disruption simulation.
+- Route reoptimization under disrupted traffic conditions.
+- Integrated experiment execution and metric comparison.
+- Visualization of route comparisons, ACO convergence, optimization metrics, and traffic performance.
 
-The integration of the complete system, dynamic traffic handling, and visualization of the final results are to be added as the remaining work is completed.
+The integrated system has been executed successfully on a synthetic network containing one depot and 12 customers. Further testing across multiple random seeds and network configurations would help assess the consistency of the results.
+
 
 ## Limitations
 
